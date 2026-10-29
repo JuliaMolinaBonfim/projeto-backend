@@ -17,5 +17,13 @@ class Tarefa(
 
     @ManyToOne
     @JoinColumn(name = "projeto_id")
-    val projeto: Projeto
+    val projeto: Projeto,
+
+    @ManyToMany
+    @JoinTable(
+        name = "tarefa_categoria",
+        joinColumns = [JoinColumn(name = "tarefa_id")],
+        inverseJoinColumns = [JoinColumn(name = "categoria_id")]
+    )
+    val categorias: MutableSet<Categoria> = mutableSetOf()
 )
