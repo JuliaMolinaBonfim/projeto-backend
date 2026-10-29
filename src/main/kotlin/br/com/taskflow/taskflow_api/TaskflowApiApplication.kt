@@ -1,4 +1,5 @@
-package br.com.taskflow.taskflow_api
+
+package br.com.taskflow
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -7,5 +8,5 @@ import org.springframework.boot.runApplication
 class TaskflowApiApplication
 
 fun main(args: Array<String>) {
-	runApplication<TaskflowApiApplication>(*args)
+    runApplication<TaskflowApiApplication>(*args)
 }
