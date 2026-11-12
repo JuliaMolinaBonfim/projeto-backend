@@ -1,4 +1,3 @@
-
 package br.com.taskflow.controller
 
 import br.com.taskflow.model.Tarefa
@@ -28,7 +27,7 @@ class TarefaController(
     private val tarefaService: TarefaService
 ) {
 
-    // Criar tarefa
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun criar(@RequestBody dados: TarefaRequest): Tarefa {
@@ -56,7 +55,6 @@ class TarefaController(
         return tarefaService.criar(tarefa)
     }
 
-    // Listar tarefas com filtros e ordenação
     @GetMapping
     fun listar(
         @RequestParam(required = false) status: String?,
@@ -98,13 +96,11 @@ class TarefaController(
             }
     }
 
-    // Buscar tarefa pelo ID
     @GetMapping("/{id}")
     fun buscarPorId(@PathVariable id: Long): Tarefa {
         return tarefaService.buscarPorId(id)
     }
 
-    // Atualizar tarefa
     @PutMapping("/{id}")
     fun atualizar(
         @PathVariable id: Long,
@@ -137,10 +133,26 @@ class TarefaController(
         return tarefaRepository.save(atualizada)
     }
 
-    // Excluir tarefa
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun excluir(@PathVariable id: Long) {
         tarefaService.excluir(id)
+    }
+
+    @PostMapping("/{id}/categorias/{categoriaId}")
+    fun adicionarCategoria(
+        @PathVariable id: Long,
+        @PathVariable categoriaId: Long
+    ): Tarefa {
+        return tarefaService.adicionarCategoria(id, categoriaId)
+    }
+
+    // Remover uma categoria de uma tarefa (exige autenticação, pois é DELETE)
+    @DeleteMapping("/{id}/categorias/{categoriaId}")
+    fun removerCategoria(
+        @PathVariable id: Long,
+        @PathVariable categoriaId: Long
+    ): Tarefa {
+        return tarefaService.removerCategoria(id, categoriaId)
     }
 }
