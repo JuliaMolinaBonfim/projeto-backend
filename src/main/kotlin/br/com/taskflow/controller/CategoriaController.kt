@@ -1,8 +1,9 @@
-
 package br.com.taskflow.controller
 
 import br.com.taskflow.model.Categoria
 import br.com.taskflow.repository.CategoriaRepository
+import br.com.taskflow.repository.TarefaRepository
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -10,8 +11,11 @@ import org.springframework.web.server.ResponseStatusException
 @RestController
 @RequestMapping("/api/categorias")
 class CategoriaController(
-    private val categoriaRepository: CategoriaRepository
+    private val categoriaRepository: CategoriaRepository,
+    private val tarefaRepository: TarefaRepository
 ) {
+
+    private val logger = LoggerFactory.getLogger(CategoriaController::class.java)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -54,20 +58,27 @@ class CategoriaController(
         return categoriaRepository.save(atualizada)
     }
 
-
+    // Excluir categoria (exige autenticação). Não permite se estiver em uso por alguma tarefa.
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun excluir(@PathVariable id: Long) {
         val categoria = categoriaRepository.findById(id).orElseThrow {
+            logger.warn("Categoria não encontrada: {}", id)
             ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "Categoria não encontrada"
             )
         }
 
+        if (tarefaRepository.existsByCategoriasId(id)) {
+            logger.warn("Categoria {} não pode ser excluída: está em uso por tarefas", id)
+            throw ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "A categoria está em uso por tarefas e não pode ser excluída"
+            )
+        }
+
+        logger.warn("Excluindo categoria: {}", id)
         categoriaRepository.delete(categoria)
     }
-
-
 }
-
