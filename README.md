@@ -2,9 +2,11 @@
 
 ## Sobre o projeto
 
-O **TaskFlow** é uma API REST desenvolvida para gerenciar projetos e tarefas. O sistema permite cadastrar projetos, criar tarefas, atribuir categorias e registrar comentários feitos por usuários.
+O **TaskFlow** é uma API REST desenvolvida para gerenciar projetos e tarefas. O sistema permite cadastrar projetos, criar tarefas, atribuir categorias, cadastrar usuários e registrar comentários relacionados às tarefas.
 
-Este projeto foi desenvolvido como atividade acadêmica da disciplina de Backend.
+O objetivo do projeto é organizar atividades de forma estruturada, permitindo acompanhar tarefas vinculadas a projetos, seus status e suas categorias.
+
+Este projeto foi desenvolvido como atividade acadêmica da disciplina de Back-End Web Services.
 
 ## Integrantes do grupo
 
@@ -15,32 +17,33 @@ Este projeto foi desenvolvido como atividade acadêmica da disciplina de Backend
 
 ## Tecnologias utilizadas
 
-- Kotlin
-- Spring Boot 4
-- Spring Data JPA
-- Spring Security
-- H2 Database
-- Gradle
-- Java 21
+- **Kotlin:** linguagem utilizada no desenvolvimento da aplicação.
+- **Spring Boot 4:** framework utilizado para estruturar e executar a API.
+- **Spring Data JPA:** responsável pela persistência e pelo mapeamento das entidades.
+- **Spring Security:** responsável pela autenticação e proteção das operações.
+- **H2 Database:** banco de dados utilizado durante a execução.
+- **Gradle:** ferramenta de gerenciamento e construção do projeto.
+- **Java 21:** plataforma utilizada para executar a aplicação.
 
 ## Entidades
 
 O sistema possui cinco entidades principais:
 
-- **Projeto:** representa um projeto que contém tarefas.
-- **Tarefa:** representa uma atividade vinculada a um projeto.
+- **Projeto:** representa um projeto que pode conter várias tarefas.
+- **Tarefa:** representa uma atividade vinculada a um projeto e que pode possuir várias categorias.
 - **Usuario:** representa um usuário que pode registrar comentários.
 - **Categoria:** organiza as tarefas por assunto.
 - **Comentario:** registra comentários feitos por usuários em tarefas.
 
 ## Relacionamentos
 
-O projeto utiliza diferentes tipos de relacionamento entre entidades:
+O projeto utiliza os seguintes relacionamentos entre entidades:
 
-- **ManyToOne:** várias tarefas podem pertencer ao mesmo projeto.
-- **ManyToOne:** vários comentários podem pertencer à mesma tarefa.
-- **ManyToOne:** vários comentários podem ser feitos pelo mesmo usuário.
-- **ManyToMany:** uma tarefa pode ter várias categorias, e uma categoria pode estar associada a várias tarefas.
+- **OneToMany — Projeto e Tarefa:** um projeto pode possuir várias tarefas.
+- **ManyToOne — Tarefa e Projeto:** várias tarefas podem pertencer ao mesmo projeto.
+- **ManyToMany — Tarefa e Categoria:** uma tarefa pode possuir várias categorias, e uma categoria pode estar associada a várias tarefas.
+- **ManyToOne — Comentario e Tarefa:** vários comentários podem pertencer à mesma tarefa.
+- **ManyToOne — Comentario e Usuario:** vários comentários podem ser feitos pelo mesmo usuário.
 
 O relacionamento entre tarefas e categorias utiliza a tabela intermediária `tarefa_categoria`.
 
@@ -52,6 +55,7 @@ O relacionamento entre tarefas e categorias utiliza a tabela intermediária `tar
 - Cadastro e listagem de categorias.
 - Criação e consulta de comentários.
 - Consulta das tarefas de um projeto.
+- Associação de categorias às tarefas.
 - Filtros de tarefas por título e status.
 - Ordenação de tarefas.
 - Autenticação para operações de exclusão.
@@ -94,6 +98,7 @@ O relacionamento entre tarefas e categorias utiliza a tabela intermediária `tar
 |---|---|---|
 | POST | `/api/categorias` | Cadastrar categoria |
 | GET | `/api/categorias` | Listar categorias |
+| GET | `/api/categorias/{id}` | Buscar categoria por ID |
 
 ### Comentários
 
@@ -102,22 +107,53 @@ O relacionamento entre tarefas e categorias utiliza a tabela intermediária `tar
 | POST | `/api/tarefas/{tarefaId}/comentarios` | Adicionar comentário |
 | GET | `/api/tarefas/{tarefaId}/comentarios` | Listar comentários da tarefa |
 
+### Associação entre tarefas e categorias
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | `/api/tarefas/{tarefaId}/categorias/{categoriaId}` | Associar categoria à tarefa |
+
 ## Filtros e ordenação
 
-A listagem de tarefas aceita parâmetros na URL.
+A listagem de tarefas aceita parâmetros na URL, permitindo filtrar e organizar os resultados.
 
-Exemplos:
+**Filtrar por status:**
 
 ```text
 GET /api/tarefas?status=PENDENTE
+```
+
+Retorna somente tarefas com status `PENDENTE`.
+
+**Buscar pelo título:**
+
+```text
 GET /api/tarefas?titulo=Criar
+```
+
+Retorna tarefas cujo título contém a palavra informada.
+
+**Ordenar pelo título em ordem crescente:**
+
+```text
 GET /api/tarefas?ordenarPor=titulo&direcao=asc
-GET /api/tarefas?status=PENDENTE&ordenarPor=titulo&direcao=desc
+```
+
+**Ordenar pelo título em ordem decrescente:**
+
+```text
+GET /api/tarefas?ordenarPor=titulo&direcao=desc
+```
+
+Também é possível combinar filtros e ordenação:
+
+```text
+GET /api/tarefas?status=PENDENTE&ordenarPor=titulo&direcao=asc
 ```
 
 ## Autenticação
 
-As operações `DELETE` exigem autenticação HTTP Basic.
+As operações de exclusão (`DELETE`) exigem autenticação utilizando HTTP Basic.
 
 Credenciais configuradas para demonstração local:
 
@@ -126,22 +162,41 @@ Credenciais configuradas para demonstração local:
 
 As demais rotas são públicas na configuração atual.
 
-**Observação:** essas credenciais são apenas para fins acadêmicos e não devem ser utilizadas em produção.
+Quando uma operação protegida é solicitada sem autenticação, a API retorna `401 Unauthorized`.
+
+**Observação:** essas credenciais são utilizadas apenas para fins acadêmicos e não devem ser utilizadas em produção.
+
+## Logs e tratamento de erros
+
+A API utiliza as classes `ProjetoService` e `TarefaService` para registrar operações importantes e tratar situações de erro.
+
+Os logs permitem acompanhar ações realizadas durante a execução da aplicação, como a criação de projetos e tarefas.
+
+Quando um projeto ou uma tarefa não é encontrado, a aplicação lança uma exceção e retorna o status HTTP `404 Not Found`.
+
+Exemplos de consulta de registros inexistentes:
+
+```text
+GET /api/projetos/999
+GET /api/tarefas/999
+```
 
 ## Como executar o projeto
 
-**Pré-requisitos:**
+### Pré-requisitos
 
-- Java 21
-- Git (opcional)
-- IntelliJ IDEA ou outra IDE compatível com Kotlin
+- Java 21 instalado.
+- IntelliJ IDEA ou outra IDE compatível com Kotlin.
+- Git (opcional).
 
-Na pasta principal do projeto, execute:
+### Executando a aplicação
+
+Na pasta principal do projeto, abra o terminal e execute:
 
 **Windows:**
 
 ```powershell
-.\gradlew.bat bootRun
+.\gradlew bootRun
 ```
 
 Após a inicialização, a API estará disponível em:
@@ -150,38 +205,31 @@ Após a inicialização, a API estará disponível em:
 http://localhost:8080
 ```
 
-Para consultar os projetos:
+Para consultar os projetos cadastrados:
 
 ```text
 http://localhost:8080/api/projetos
 ```
 
-**Observação:** o banco H2 está configurado em memória. Os dados cadastrados são perdidos quando a aplicação é reiniciada.
+### Banco de dados
 
-## Exemplos de uso da API
+O projeto utiliza o banco de dados H2 configurado em memória.
 
-Os exemplos abaixo demonstram as principais funcionalidades implementadas no TaskFlow.
+Isso significa que os dados cadastrados ficam disponíveis durante a execução da aplicação, mas são perdidos quando o servidor é reiniciado.
 
-Todos os comandos podem ser executados no PowerShell, com a aplicação Spring Boot em execução.
+## Exemplos de uso
 
-**Importante:** como o banco H2 está em memória, os dados são apagados ao reiniciar a aplicação. Os exemplos consideram que os primeiros registros recebem ID `1`.
+Os exemplos abaixo demonstram algumas das principais funcionalidades da API.
 
 ### 1. Criar um projeto
 
-**POST** `/api/projeto`s
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/projetos" -Method POST -ContentType "application/json" -Body '{"nome":"Projeto Faculdade","descricao":"Desenvolvimento da API TaskFlow","prazo":"2026-11-30"}'
-```
-
-Exemplo de resposta:
+**POST** `/api/projetos`
 
 ```json
 {
-  "id": 1,
-  "nome": "Projeto Faculdade",
-  "descricao": "Desenvolvimento da API TaskFlow",
-  "prazo": "2026-11-30"
+  "nome": "Projeto TaskFlow",
+  "descricao": "Sistema de gerenciamento de projetos e tarefas",
+  "prazo": "2026-12-15"
 }
 ```
 
@@ -189,222 +237,68 @@ Exemplo de resposta:
 
 **POST** `/api/usuarios`
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/usuarios" -Method POST -ContentType "application/json" -Body '{"nome":"Maria","email":"maria@email.com"}'
+```json
+{
+  "nome": "Julia",
+  "email": "julia@email.com"
+}
 ```
 
 ### 3. Criar uma categoria
 
 **POST** `/api/categorias`
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/categorias" -Method POST -ContentType "application/json" -Body '{"nome":"Backend"}'
+```json
+{
+  "nome": "Desenvolvimento"
+}
 ```
 
-### 4. Criar uma tarefa associada ao projeto e à categoria
+### 4. Criar uma tarefa
 
 **POST** `/api/tarefas`
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/tarefas" -Method POST -ContentType "application/json" -Body '{"titulo":"Criar API","descricao":"Implementar endpoints REST","status":"PENDENTE","projetoId":1,"categoriaIds":[1]}'
+```json
+{
+  "titulo": "Desenvolver tela inicial",
+  "descricao": "Criar a interface inicial do TaskFlow",
+  "status": "PENDENTE",
+  "projetoId": 1,
+  "categoriaIds": [1]
+}
 ```
 
-Esse exemplo demonstra dois relacionamentos:
+A tarefa fica vinculada ao projeto informado e pode ser associada às categorias cadastradas.
 
-- A tarefa pertence ao projeto de ID `1` (`ManyToOne`).
-- A tarefa está associada à categoria de ID `1` (`ManyToMany`).
-
-### 5. Adicionar um comentário à tarefa
+### 5. Adicionar um comentário
 
 **POST** `/api/tarefas/1/comentarios`
 
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/tarefas/1/comentarios" -Method POST -ContentType "application/json" -Body '{"texto":"Precisamos finalizar os testes","usuarioId":1}'
+```json
+{
+  "texto": "A implementação da tarefa foi iniciada.",
+  "usuarioId": 1
+}
 ```
 
 O comentário fica associado à tarefa e ao usuário que o escreveu.
 
-### 6. Consultar os registros
+## Testes realizados
 
-**Listar projetos:**
+A aplicação foi testada utilizando o Postman, verificando:
 
-```text
-GET http://localhost:8080/api/projetos
-```
-
-**Buscar um projeto pelo ID:**
-
-```text
-GET http://localhost:8080/api/projetos/1
-```
-
-**Listar usuários:**
-
-```text
-GET http://localhost:8080/api/usuarios
-```
-
-**Listar categorias:**
-
-```text
-GET http://localhost:8080/api/categorias
-```
-
-**Listar tarefas:**
-
-```text
-GET http://localhost:8080/api/tarefas
-```
-
-**Buscar uma tarefa pelo ID:**
-
-```text
-GET http://localhost:8080/api/tarefas/1
-```
-
-**Listar tarefas de um projeto:**
-
-```text
-GET http://localhost:8080/api/projetos/1/tarefas
-```
-
-**Listar comentários de uma tarefa:**
-
-```text
-GET http://localhost:8080/api/tarefas/1/comentarios
-```
-
-Esses endereços podem ser abertos diretamente no navegador.
-
-### 7. Filtrar tarefas por status
-
-**GET** `/api/tarefas?status=PENDENTE`
-
-```text
-http://localhost:8080/api/tarefas?status=PENDENTE
-```
-
-Retorna somente tarefas com status `PENDENTE`.
-
-### 8. Buscar tarefas pelo título
-
-**GET** `/api/tarefas?titulo=Criar`
-
-```text
-http://localhost:8080/api/tarefas?titulo=Criar
-```
-
-Retorna tarefas cujo título contém a palavra `Criar`.
-
-### 9. Ordenar tarefas
-
-**GET** `/api/tarefas?ordenarPor=titulo&direcao=desc`
-
-```text
-http://localhost:8080/api/tarefas?ordenarPor=titulo&direcao=desc
-```
-
-Ordena as tarefas pelo título em ordem decrescente.
-
-Também é possível combinar filtros e ordenação:
-
-```text
-http://localhost:8080/api/tarefas?status=PENDENTE&ordenarPor=titulo&direcao=asc
-```
-
-### 10. Atualizar um projeto
-
-**PUT** `/api/projetos/1`
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/projetos/1" -Method PUT -ContentType "application/json" -Body '{"nome":"Projeto Atualizado","descricao":"API com novas funcionalidades","prazo":"2026-12-15"}'
-```
-
-### 11. Atualizar uma tarefa
-
-**PUT** `/api/tarefas/1`
-
-```powershell
-Invoke-RestMethod -Uri "http://localhost:8080/api/tarefas/1" -Method PUT -ContentType "application/json" -Body '{"titulo":"Criar API","descricao":"Endpoints implementados","status":"CONCLUIDA","projetoId":1,"categoriaIds":[1]}'
-```
-
-### 12. Testar a autenticação
-
-As operações de exclusão exigem autenticação HTTP Basic.
-
-**Tentativa sem autenticação:**
-
-```powershell
-try {
-    Invoke-RestMethod -Uri "http://localhost:8080/api/tarefas/1" -Method DELETE
-} catch {
-    Write-Host "Status HTTP:" ([int]$_.Exception.Response.StatusCode)
-}
-```
-
-Resultado esperado:
-
-```text
-Status HTTP: 401
-```
-
-O código `401` indica que a exclusão foi bloqueada por falta de autenticação.
-
-**Exclusão com autenticação:**
-
-```powershell
-$senha = ConvertTo-SecureString "admin123" -AsPlainText -Force
-$credencial = New-Object System.Management.Automation.PSCredential("admin", $senha)
-
-Invoke-RestMethod -Uri "http://localhost:8080/api/tarefas/1" -Method DELETE -Credential $credencial
-```
-
-Para excluir um projeto, a rota protegida é:
-
-```text
-DELETE /api/projetos/1
-```
-
-**Atenção:** execute as exclusões somente depois dos demais testes, porque elas removem os registros.
-
-### 13. Logs e tratamento de erros
-
-A API utiliza as classes `ProjetoService` e `TarefaService` para registrar operações importantes e tratar erros.
-
-Exemplos de mensagens nos logs:
-
-```text
-INFO  ProjetoService : Criando projeto: Projeto Faculdade
-INFO  TarefaService  : Criando tarefa: Criar API
-WARN  ProjetoService : Projeto não encontrado: 999
-WARN  TarefaService  : Tarefa não encontrada: 999
-```
-
-Ao consultar um registro inexistente, a API retorna o status HTTP `404 Not Found`.
-
-Exemplo:
-
-```text
-GET http://localhost:8080/api/projetos/999
-```
-
-### Resumo dos recursos demonstrados
-
-Os exemplos apresentados demonstram:
-
-- Cadastro e consulta de cinco entidades.
-- CRUD completo de projetos e tarefas.
-- Associação entre projetos, tarefas, categorias, usuários e comentários.
-- Relacionamentos `ManyToOne` e `ManyToMany`.
-- Filtros e ordenação por parâmetros de consulta.
-- Autenticação HTTP Basic para exclusões.
-- Logs e tratamento de exceções.
-
-
-## Vídeo de apresentação
-
-Link do vídeo no YouTube:
+- Criação, listagem, atualização e exclusão de projetos.
+- Criação, listagem e atualização de tarefas.
+- Cadastro e consulta de usuários e categorias.
+- Associação entre tarefas e categorias.
+- Criação e consulta de comentários.
+- Filtragem e ordenação de tarefas.
+- Retorno `404 Not Found` para registros inexistentes.
+- Retorno `401 Unauthorized` ao tentar excluir sem autenticação.
+- Execução de operações protegidas com autenticação.
 
 ## Status do projeto
 
 API desenvolvida para apresentação acadêmica, com funcionalidades de gerenciamento de projetos, tarefas, usuários, categorias e comentários.
+
+O projeto demonstra a utilização de Kotlin, Spring Boot, persistência com JPA, relacionamentos entre entidades, organização por camadas, autenticação e operações REST.
