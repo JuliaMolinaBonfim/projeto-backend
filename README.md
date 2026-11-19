@@ -15,6 +15,11 @@ Este projeto foi desenvolvido como atividade acadêmica da disciplina de Back-En
 - Isabela Louise da Costa Silva
 - Julia Molina Bonfim
 
+## Link para o vídeo
+
+https://youtu.be/e-vNAVJ4CBw?is=r4l3WhRMm970d_-8
+
+
 ## Tecnologias utilizadas
 
 - **Kotlin:** linguagem utilizada no desenvolvimento da aplicação.
