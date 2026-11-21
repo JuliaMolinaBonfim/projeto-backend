@@ -1,3 +1,18 @@
 spring:
   application:
     name: taskflow-api
+  jpa:
+    # Garante que a conversão para DTO aconteça dentro dos services (boa prática)
+    open-in-view: false
+
+app:
+  jwt:
+    # Chave usada para assinar os tokens (HS256). Precisa ter NO MÍNIMO 32 caracteres.
+    # Em produção, defina a variável de ambiente JWT_SECRET e NUNCA suba a chave real para o Git.
+    secret: ${JWT_SECRET:taskflow-chave-secreta-apenas-para-desenvolvimento-local}
+    # Tempo de vida do token, em segundos (3600 = 1 hora)
+    expiracao-segundos: 3600
+  admin:
+    # Administrador criado automaticamente ao iniciar a aplicação (apenas para demonstração local)
+    email: ${ADMIN_EMAIL:admin@taskflow.com}
+    senha: ${ADMIN_SENHA:Admin@123}

@@ -1,38 +1,36 @@
 
 package br.com.taskflow.controller
 
-import br.com.taskflow.model.Projeto
-import br.com.taskflow.model.Tarefa
-import br.com.taskflow.repository.ProjetoRepository
-import br.com.taskflow.repository.TarefaRepository
+import br.com.taskflow.dto.ProjetoRequest
+import br.com.taskflow.dto.ProjetoResponse
+import br.com.taskflow.dto.TarefaResponse
 import br.com.taskflow.service.ProjetoService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/projetos")
 class ProjetoController(
-    private val projetoRepository: ProjetoRepository,
-    private val tarefaRepository: TarefaRepository,
     private val projetoService: ProjetoService
 ) {
 
     // Criar projeto
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun criar(@RequestBody projeto: Projeto): Projeto {
-        return projetoService.criar(projeto)
+    fun criar(@Valid @RequestBody dados: ProjetoRequest): ProjetoResponse {
+        return projetoService.criar(dados)
     }
 
     // Listar todos os projetos
     @GetMapping
-    fun listar(): List<Projeto> {
-        return projetoRepository.findAll()
+    fun listar(): List<ProjetoResponse> {
+        return projetoService.listar()
     }
 
     // Buscar projeto pelo ID
     @GetMapping("/{id}")
-    fun buscarPorId(@PathVariable id: Long): Projeto {
+    fun buscarPorId(@PathVariable id: Long): ProjetoResponse {
         return projetoService.buscarPorId(id)
     }
 
@@ -40,21 +38,12 @@ class ProjetoController(
     @PutMapping("/{id}")
     fun atualizar(
         @PathVariable id: Long,
-        @RequestBody dados: Projeto
-    ): Projeto {
-        val projeto = projetoService.buscarPorId(id)
-
-        val atualizado = Projeto(
-            id = projeto.id,
-            nome = dados.nome,
-            descricao = dados.descricao,
-            prazo = dados.prazo
-        )
-
-        return projetoRepository.save(atualizado)
+        @Valid @RequestBody dados: ProjetoRequest
+    ): ProjetoResponse {
+        return projetoService.atualizar(id, dados)
     }
 
-    // Excluir projeto
+    // Excluir projeto (somente ADMIN)
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun excluir(@PathVariable id: Long) {
@@ -63,10 +52,7 @@ class ProjetoController(
 
     // Listar tarefas de um projeto
     @GetMapping("/{id}/tarefas")
-    fun listarTarefasDoProjeto(
-        @PathVariable id: Long
-    ): List<Tarefa> {
-        projetoService.buscarPorId(id)
-        return tarefaRepository.findByProjetoId(id)
+    fun listarTarefasDoProjeto(@PathVariable id: Long): List<TarefaResponse> {
+        return projetoService.listarTarefas(id)
     }
 }

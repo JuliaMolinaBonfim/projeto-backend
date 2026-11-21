@@ -1,4 +1,3 @@
-
 package br.com.taskflow.model
 
 import jakarta.persistence.*
@@ -9,15 +8,15 @@ class Tarefa(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    val titulo: String,
+    var titulo: String,
 
-    val descricao: String,
+    var descricao: String,
 
-    val status: String = "PENDENTE",
+    var status: String = "PENDENTE",
 
     @ManyToOne
     @JoinColumn(name = "projeto_id")
-    val projeto: Projeto,
+    var projeto: Projeto,
 
     @ManyToMany
     @JoinTable(

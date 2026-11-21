@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface TarefaRepository : JpaRepository<Tarefa, Long> {
     fun findByProjetoId(projetoId: Long): List<Tarefa>
+    fun existsByProjetoId(projetoId: Long): Boolean
     fun existsByCategoriasId(categoriaId: Long): Boolean
 }

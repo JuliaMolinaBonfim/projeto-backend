@@ -1,7 +1,6 @@
 
 package br.com.taskflow.model
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 @Entity
@@ -11,14 +10,13 @@ class Projeto(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    val nome: String,
+    var nome: String,
 
-    val descricao: String,
+    var descricao: String,
 
-    val prazo: String,
+    var prazo: String,
 
     // Um projeto pode possuir várias tarefas.
     @OneToMany(mappedBy = "projeto", fetch = FetchType.LAZY)
-    @get:JsonIgnore
     val tarefas: MutableList<Tarefa> = mutableListOf()
 )

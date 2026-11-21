@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface ComentarioRepository : JpaRepository<Comentario, Long> {
     fun findByTarefaId(tarefaId: Long): List<Comentario>
+    fun deleteByTarefaId(tarefaId: Long)
 }

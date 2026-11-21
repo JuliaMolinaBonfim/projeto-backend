@@ -9,5 +9,5 @@ class Categoria(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    val nome: String
+    var nome: String
 )

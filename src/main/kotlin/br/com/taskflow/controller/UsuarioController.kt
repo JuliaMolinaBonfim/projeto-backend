@@ -1,25 +1,20 @@
 
 package br.com.taskflow.controller
 
-import br.com.taskflow.model.Usuario
-import br.com.taskflow.repository.UsuarioRepository
-import org.springframework.http.HttpStatus
+import br.com.taskflow.dto.UsuarioResponse
+import br.com.taskflow.service.UsuarioService
 import org.springframework.web.bind.annotation.*
 
+// Somente ADMIN pode listar usuários (a regra está no SecurityConfig).
+// O cadastro de novos usuários é feito em POST /api/auth/registrar.
 @RestController
 @RequestMapping("/api/usuarios")
 class UsuarioController(
-    private val usuarioRepository: UsuarioRepository
+    private val usuarioService: UsuarioService
 ) {
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    fun criar(@RequestBody usuario: Usuario): Usuario {
-        return usuarioRepository.save(usuario)
-    }
-
     @GetMapping
-    fun listar(): List<Usuario> {
-        return usuarioRepository.findAll()
+    fun listar(): List<UsuarioResponse> {
+        return usuarioService.listar()
     }
 }

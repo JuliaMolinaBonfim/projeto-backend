@@ -1,84 +1,46 @@
 package br.com.taskflow.controller
 
-import br.com.taskflow.model.Categoria
-import br.com.taskflow.repository.CategoriaRepository
-import br.com.taskflow.repository.TarefaRepository
-import org.slf4j.LoggerFactory
+import br.com.taskflow.dto.CategoriaRequest
+import br.com.taskflow.dto.CategoriaResponse
+import br.com.taskflow.service.CategoriaService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @RequestMapping("/api/categorias")
 class CategoriaController(
-    private val categoriaRepository: CategoriaRepository,
-    private val tarefaRepository: TarefaRepository
+    private val categoriaService: CategoriaService
 ) {
-
-    private val logger = LoggerFactory.getLogger(CategoriaController::class.java)
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun criar(@RequestBody categoria: Categoria): Categoria {
-        return categoriaRepository.save(categoria)
+    fun criar(@Valid @RequestBody dados: CategoriaRequest): CategoriaResponse {
+        return categoriaService.criar(dados)
     }
 
     @GetMapping
-    fun listar(): List<Categoria> {
-        return categoriaRepository.findAll()
+    fun listar(): List<CategoriaResponse> {
+        return categoriaService.listar()
     }
 
     @GetMapping("/{id}")
-    fun buscarPorId(@PathVariable id: Long): Categoria {
-        return categoriaRepository.findById(id).orElseThrow {
-            ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Categoria não encontrada"
-            )
-        }
+    fun buscarPorId(@PathVariable id: Long): CategoriaResponse {
+        return categoriaService.buscarPorId(id)
     }
 
     @PutMapping("/{id}")
     fun atualizar(
         @PathVariable id: Long,
-        @RequestBody dados: Categoria
-    ): Categoria {
-        val categoria = categoriaRepository.findById(id).orElseThrow {
-            ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Categoria não encontrada"
-            )
-        }
-
-        val atualizada = Categoria(
-            id = categoria.id,
-            nome = dados.nome
-        )
-
-        return categoriaRepository.save(atualizada)
+        @Valid @RequestBody dados: CategoriaRequest
+    ): CategoriaResponse {
+        return categoriaService.atualizar(id, dados)
     }
 
-    // Excluir categoria (exige autenticação). Não permite se estiver em uso por alguma tarefa.
+    // Excluir categoria (somente ADMIN). Não permite se estiver em uso por alguma tarefa.
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun excluir(@PathVariable id: Long) {
-        val categoria = categoriaRepository.findById(id).orElseThrow {
-            logger.warn("Categoria não encontrada: {}", id)
-            ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "Categoria não encontrada"
-            )
-        }
-
-        if (tarefaRepository.existsByCategoriasId(id)) {
-            logger.warn("Categoria {} não pode ser excluída: está em uso por tarefas", id)
-            throw ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "A categoria está em uso por tarefas e não pode ser excluída"
-            )
-        }
-
-        logger.warn("Excluindo categoria: {}", id)
-        categoriaRepository.delete(categoria)
+        categoriaService.excluir(id)
     }
 }

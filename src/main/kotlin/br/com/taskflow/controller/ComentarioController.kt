@@ -1,56 +1,33 @@
 
 package br.com.taskflow.controller
 
-import br.com.taskflow.model.Comentario
-import br.com.taskflow.repository.ComentarioRepository
-import br.com.taskflow.repository.TarefaRepository
-import br.com.taskflow.repository.UsuarioRepository
+import br.com.taskflow.dto.ComentarioRequest
+import br.com.taskflow.dto.ComentarioResponse
+import br.com.taskflow.service.ComentarioService
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.server.ResponseStatusException
-
-data class ComentarioRequest(
-    val texto: String,
-    val usuarioId: Long
-)
+import java.security.Principal
 
 @RestController
 @RequestMapping("/api/tarefas/{tarefaId}/comentarios")
 class ComentarioController(
-    private val comentarioRepository: ComentarioRepository,
-    private val tarefaRepository: TarefaRepository,
-    private val usuarioRepository: UsuarioRepository
+    private val comentarioService: ComentarioService
 ) {
 
+    // "principal" é o usuário logado. Com JWT, principal.name é o e-mail guardado no token.
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun criar(
         @PathVariable tarefaId: Long,
-        @RequestBody dados: ComentarioRequest
-    ): Comentario {
-        val tarefa = tarefaRepository.findById(tarefaId).orElseThrow {
-            ResponseStatusException(HttpStatus.NOT_FOUND, "Tarefa não encontrada")
-        }
-
-        val usuario = usuarioRepository.findById(dados.usuarioId).orElseThrow {
-            ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado")
-        }
-
-        val comentario = Comentario(
-            texto = dados.texto,
-            tarefa = tarefa,
-            autor = usuario
-        )
-
-        return comentarioRepository.save(comentario)
+        @Valid @RequestBody dados: ComentarioRequest,
+        principal: Principal
+    ): ComentarioResponse {
+        return comentarioService.criar(tarefaId, dados, principal.name)
     }
 
     @GetMapping
-    fun listar(@PathVariable tarefaId: Long): List<Comentario> {
-        if (!tarefaRepository.existsById(tarefaId)) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Tarefa não encontrada")
-        }
-
-        return comentarioRepository.findByTarefaId(tarefaId)
+    fun listar(@PathVariable tarefaId: Long): List<ComentarioResponse> {
+        return comentarioService.listar(tarefaId)
     }
 }
